@@ -168,10 +168,11 @@
 			
 			var nexts = [],
 				parent = current.parentElement,
-				potentials = selector && parent ? find_by_parent(selector, parent) : [];
+				potentials = selector && parent ? find_by_parent(selector, parent) : [],
+				next = current.nextElementSibling;
 				
-			if( is_html_el(current) && ( !selector || el_is_in_arr(current, potentials) ) ) {
-				nexts.push(current);	
+			if( is_html_el(next) && ( !selector || el_is_in_arr(next, potentials) ) ) {
+				nexts.push(next);	
 			}
 				
 			return new ElementArray(nexts);
@@ -189,13 +190,13 @@
 				parent = current.parentElement,
 				potentials = selector && parent ? find_by_parent(selector, parent) : [];
 				
-			while( current ) {
+			while( current = current.nextElementSibling ) {
 				
-				current = current.nextElementSibling;
+				if( false === is_html_el(current) )
+					continue;
 				
-				if( is_html_el(current) && ( !selector || el_is_in_arr(current, potentials) ) ) {
+				if ( !selector || el_is_in_arr(current, potentials) ) 
 					nexts.push(current);	
-				}
 				
 			} 
 			return new ElementArray(nexts);
