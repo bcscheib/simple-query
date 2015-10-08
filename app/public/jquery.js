@@ -1,5 +1,14 @@
 (function( parent_doc ){
 	
+	function extend(destination, source) {
+	  for (var k in source) {
+	    if (source.hasOwnProperty(k)) {
+	      destination[k] = source[k];
+	    }
+	  }
+	  return destination; 
+	}
+	
 	// init function for new jquery object - hidden by closure
 	var init = function(selector, context) {
 		var obj = this;
@@ -71,23 +80,95 @@
 	
 	// Array like structure to store elements
 	var ElementArray = function( selector, context ) {
+		
+		// handle straight up objects
 		if ( selector && typeof(selector) === 'object') {
 			this.push(selector);
 		}
 	}
+	
+	// methods defined here are not meant to be called from parent constructor
+	// ie ElementArray.next or .first
+	ElementArray.fn = {
+		constructor: ElementArray,
+		length: 0,
+		splice: Array.prototype.splice,
+		push: Array.prototype.push,
+		
+		html: function(){
+			
+			// todo: call first property here element
+			return this.length > 0 ? this[0].innerHTML : undefined;
+		},
+		
+		last: function(){
+			return this.length > 0 ? this.eq(this.length - 1) : this.eq(0);			
+		},
+		
+		first: function(){
+			return this.eq(0);
+		},
+		
+		get: function( index ) {
+			return index !== undefined ? this[index] : undefined;
+		},
+		
+		eq: function( index ) {
+			// todo: handle negative indexing here
+			return this[index] !== undefined ? new ElementArray( this[index] ) : new ElementArray();
+		},
+		
+		
+		// todo: modify this to be nextAll when I have siblings done
+		next: function(selector) {
+			var first = this.get(0);
+			var next = null;
+			if( first !== undefined && first.nextElementSibling) {
+				
+				next = first.nextElementSibling;
+				if( typeof(selector) === 'string' ) {
+					var original_id = next.id;
+						
+					if( next.id === undefined) {
+						next.setAttribute("id", Date.now().toString());
+					}
+					
+					var found = false;
+					var parent = first.parentElement;
+					
+					// only way this doesn't have a parent is a document but no next for that
+					if( parent ) {
+						var potentials = parent.querySelectorAll(selector);
+						for(var i = 0; i < potentials.length; i++) {
+							var potential = potentials[i];
+							if( potential.id !== undefined && potential.id === next.id ) {
+								found = true;
+							}
+						}
+					} 
+					next = !found ? null : next;
+					
+				} 
+			} 
+			return new ElementArray(next);
+		},
+		
+		hasClass: function(class_name) {
+			var first = this.get(0);
+			if( first !== undefined ) {
+				return -1 !== first.className.split(' ').indexOf(class_name);
+			} else {
+				null;
+			}
+		}
+	};
 	ElementArray.prototype = Object.create(jQuery.prototype);
 	
-	ElementArray.prototype.constructor = ElementArray;
-	ElementArray.prototype.length = 0;
-	ElementArray.prototype.splice = Array.prototype.splice;
-	ElementArray.prototype.push = Array.prototype.push;
+	// insert ElementArray methods to prototype
+	extend(ElementArray.prototype, ElementArray.fn);
 	
 	// insert jQuery.fn static methods to jQuery
-	for (var k in jQuery.fn) {
-		if (jQuery.fn.hasOwnProperty(k)) {
-		  jQuery[k] = jQuery.fn[k];
-		}
-	}
+	extend(jQuery, jQuery.fn);
 	
 	// set the global variables
 	parent_doc.$ = parent_doc.jQuery = jQuery;
