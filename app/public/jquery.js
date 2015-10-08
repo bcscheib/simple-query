@@ -26,6 +26,47 @@
 			return new ElementArray( selector, context);
 		}
 	}
+	
+	var find_by_parent = function( selector, parent, container_arr ) {
+				
+		if( container_arr === undefined )
+			container_arr = [];
+					
+		var els = parent.querySelectorAll(selector);
+
+		for( var i = 0; i < els.length; i++) 
+			container_arr.push( els[i] );
+			
+		return container_arr;
+	};
+	
+	// whether a dom element is a valid html element
+	var is_html_el = function( el ) {
+		return el && el instanceof(HTMLElement) && !(el instanceof(HTMLScriptElement));
+	}
+	
+	// whether an element is in an array of elements
+	var el_is_in_arr = function( el, potentials ) {
+		
+		var valid = false,
+		 	original_id = el.id;
+			
+		if( !el.id ) 
+			el.setAttribute("id", Date.now().toString());
+		
+		
+		for( var i = 0; i < potentials.length; i++ ) {
+			var potential = potentials[i];
+			if( potential.id !== undefined && potential.id === el.id ) 
+				valid = true;
+				
+		}
+		
+		// restore the el id state
+		original_id ? el.setAttribute("id", original_id) : el.removeAttribute("id");
+		
+		return valid;
+	} 
 
 	var jQuery = function( selector, context ) {
 		return init.call(this, selector, context );
@@ -37,20 +78,6 @@
 		find: function(selector ) {
 			
 			var arr = new ElementArray();
-			
-			var find_by_parent = function( selector, parent, container_arr ) {
-				
-				if( container_arr === undefined )
-					container_arr = [];
-							
-				var els = parent.querySelectorAll(selector);
-				var i = 0;
-				for( var i = 0; i < els.length; i++) 
-					container_arr.push( els[i] );
-					
-				return container_arr;
-				
-			}
 			
 			// do the find for all the 'jquery' elements
 			if( true === (this instanceof(ElementArray)) ) {
@@ -82,7 +109,14 @@
 	var ElementArray = function( selector, context ) {
 		
 		// handle straight up objects
-		if ( selector && typeof(selector) === 'object') {
+		if( selector && Array.isArray(selector) ) {
+			
+			for(var i = 0; i < selector.length; i++) {
+				this.push(selector[i]);
+			}
+			
+		} else if ( selector && typeof(selector) === 'object') {
+			
 			this.push(selector);
 		}
 	}
@@ -94,11 +128,17 @@
 		length: 0,
 		splice: Array.prototype.splice,
 		push: Array.prototype.push,
+		concat: Array.prototype.concat,
 		
 		html: function(){
 			
 			// todo: call first property here element
 			return this.length > 0 ? this[0].innerHTML : undefined;
+		},
+		
+		// todo: fix when the document element 
+		parent: function(){
+			return this.length > 0 ? new ElementArray(this[0].parentElement) : new ElementArray();
 		},
 		
 		last: function(){
@@ -118,39 +158,47 @@
 			return this[index] !== undefined ? new ElementArray( this[index] ) : new ElementArray();
 		},
 		
-		
-		// todo: modify this to be nextAll when I have siblings done
 		next: function(selector) {
-			var first = this.get(0);
-			var next = null;
-			if( first !== undefined && first.nextElementSibling) {
+			var current = this.get(0);
+			
+			if( current === undefined ) 
+				return new ElementArray();
+			
+			selector = selector || null;
+			
+			var nexts = [],
+				parent = current.parentElement,
+				potentials = selector && parent ? find_by_parent(selector, parent) : [];
 				
-				next = first.nextElementSibling;
-				if( typeof(selector) === 'string' ) {
-					var original_id = next.id;
-						
-					if( next.id === undefined) {
-						next.setAttribute("id", Date.now().toString());
-					}
-					
-					var found = false;
-					var parent = first.parentElement;
-					
-					// only way this doesn't have a parent is a document but no next for that
-					if( parent ) {
-						var potentials = parent.querySelectorAll(selector);
-						for(var i = 0; i < potentials.length; i++) {
-							var potential = potentials[i];
-							if( potential.id !== undefined && potential.id === next.id ) {
-								found = true;
-							}
-						}
-					} 
-					next = !found ? null : next;
-					
-				} 
+			if( is_html_el(current) && ( !selector || el_is_in_arr(current, potentials) ) ) {
+				nexts.push(current);	
+			}
+				
+			return new ElementArray(nexts);
+		},
+		
+		nextAll: function(selector) {
+			var current = this.get(0);
+			
+			if( current === undefined ) 
+				return new ElementArray();
+			
+			selector = selector || null;
+			
+			var nexts = [],
+				parent = current.parentElement,
+				potentials = selector && parent ? find_by_parent(selector, parent) : [];
+				
+			while( current ) {
+				
+				current = current.nextElementSibling;
+				
+				if( is_html_el(current) && ( !selector || el_is_in_arr(current, potentials) ) ) {
+					nexts.push(current);	
+				}
+				
 			} 
-			return new ElementArray(next);
+			return new ElementArray(nexts);
 		},
 		
 		hasClass: function(class_name) {
