@@ -13,7 +13,7 @@
 	var init = function(selector, context) {
 		var obj = this;
 		
-		obj.selector = selector;
+		obj.selector = selector,
 		obj.context = context;
 		
 		if( false === this instanceof(jQuery) ) {
@@ -66,7 +66,54 @@
 		original_id ? el.setAttribute("id", original_id) : el.removeAttribute("id");
 		
 		return valid;
-	} 
+	};
+	
+	// return all children of the element's parent matching selector
+	var parent_els = function(el, selector) {
+		var parent = el.parentElement;
+		if( selector === undefined ) {
+			var children = parent.children,
+				els = [];
+			for( var i = 0; i < children.length; i++) {
+				if( is_html_el( children[i] ) ) 
+					els.push(children[i]);
+			}
+			return els;
+		} else {
+			return find_by_parent(selector, parent);
+		}
+		
+	}
+	
+	// get next or prev elements with a possible limit to how far to go
+	var els_before_or_after = function( el, selector, dir, limit ) {
+		
+		if( el === undefined ) 
+			return new ElementArray();
+		
+		dir = dir || 'next';
+		selector = selector || null;
+		limit = limit || null;
+		
+			
+		var nexts = [],
+			potentials = selector && parent ? parent_els(el, selector) : [];
+			
+		var i = 0;
+		while( el = dir === 'next' ? el.nextElementSibling : el.previousElementSibling )
+		{
+			
+			i++;
+			if( false === is_html_el(el) || (limit && i > limit) )
+				continue;
+			
+			if ( !selector || el_is_in_arr(el, potentials) ) 
+				nexts.push(el);	
+			
+		} 
+
+		return new ElementArray(nexts);
+	};
 
 	var jQuery = function( selector, context ) {
 		return init.call(this, selector, context );
@@ -158,48 +205,52 @@
 			return this[index] !== undefined ? new ElementArray( this[index] ) : new ElementArray();
 		},
 		
-		next: function(selector) {
-			var current = this.get(0);
+		// todo: support objects here too
+		not: function(selector) {
 			
-			if( current === undefined ) 
-				return new ElementArray();
-			
-			selector = selector || null;
-			
-			var nexts = [],
-				parent = current.parentElement,
-				potentials = selector && parent ? find_by_parent(selector, parent) : [],
-				next = current.nextElementSibling;
-				
-			if( is_html_el(next) && ( !selector || el_is_in_arr(next, potentials) ) ) {
-				nexts.push(next);	
+			if( selector !== undefined ) {
+				var matches = new ElementArray();
+				for(var i = 0; i < this.length; i++) {
+					var el = this[i];
+					if( !el.matches(selector) ) {
+						matches.push(el);
+					}
+				}
+				return matches;
+			} else {
+				return this;
 			}
-				
-			return new ElementArray(nexts);
+			
+		},
+		
+		prev: function(selector) {
+			return els_before_or_after( this.get(0), selector, 'prev', 1 );
+		},
+		
+		next: function(selector) {
+			return els_before_or_after( this.get(0), selector, 'next', 1 );
 		},
 		
 		nextAll: function(selector) {
-			var current = this.get(0);
+			return els_before_or_after( this.get(0), selector, 'next' );
+		},
+		
+		prevAll: function(selector) {
+			return els_before_or_after( this.get(0), selector, 'prev' );
+		},
+		
+		siblings: function(selector) {
 			
-			if( current === undefined ) 
-				return new ElementArray();
-			
-			selector = selector || null;
-			
-			var nexts = [],
-				parent = current.parentElement,
-				potentials = selector && parent ? find_by_parent(selector, parent) : [];
-				
-			while( current = current.nextElementSibling ) {
-				
-				if( false === is_html_el(current) )
-					continue;
-				
-				if ( !selector || el_is_in_arr(current, potentials) ) 
-					nexts.push(current);	
-				
-			} 
-			return new ElementArray(nexts);
+			var el = this.get(0),
+				siblings = [],
+			    children = parent_els(el, selector);
+			    
+			for( var i = 0; i < children.length; i++) {
+				if( children[i] !== el ) {
+					siblings.push(children[i]);
+				}
+			}
+			return new ElementArray( siblings );
 		},
 		
 		hasClass: function(class_name) {
@@ -209,7 +260,45 @@
 			} else {
 				null;
 			}
-		}
+		},
+		
+		addClass: function(class_name) {
+			
+			for(var i = 0; i < this.length; i++) {
+				var el = this[i],
+				    classes = el.className.split(' ');
+				    
+				if( -1 === classes.indexOf(class_name) ) {
+					classes.push(class_name);
+					el.className = classes.join(' ');
+				};
+			}
+			
+			return this;
+		},
+		
+		removeClass: function(class_name) {
+			
+			for(var i = 0; i < this.length; i++) {
+				var el = this[i],
+				    classes = el.className.split(' '),
+				    new_classes = [];
+				    
+				for( var j = 0; j < classes.length; j++ ) {
+					if( classes[j] !== class_name ) {
+						new_classes.push(classes[j]);
+					}
+				}
+				
+				if( new_classes.length )
+					el.className = new_classes.join(' ');
+				else
+					el.removeAttribute('class');
+			}
+			
+			return this;
+		},
+		
 	};
 	ElementArray.prototype = Object.create(jQuery.prototype);
 	
