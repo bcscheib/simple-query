@@ -9,6 +9,18 @@
 	  return destination; 
 	}
 	
+	var create_node = function(html) {
+		var node = null;
+		
+		if( html.length && html[0] === '<' ) {
+			var div = document.createElement('div');
+			div.innerHTML = html;
+			node = div.childNodes;
+		}
+		
+		return node;
+	}
+	
 	// init function for new jquery object - hidden by closure
 	var init = function(selector, context) {
 		var obj = this;
@@ -21,7 +33,7 @@
 		}
 		
 		if( typeof(selector) === 'string' ) {
-			return els = obj.find( selector, context );
+			return create_node(selector) || obj.find( selector, context );
 		} else  {
 			return new ElementArray( selector, context);
 		}
@@ -34,8 +46,7 @@
 					
 		var els = parent.querySelectorAll(selector);
 
-		for( var i = 0; i < els.length; i++) 
-			container_arr.push( els[i] );
+		jQuery.fn.each(els, function(){ container_arr.push(this); });
 			
 		return container_arr;
 	};
@@ -54,13 +65,11 @@
 		if( !el.id ) 
 			el.setAttribute("id", Date.now().toString());
 		
-		
-		for( var i = 0; i < potentials.length; i++ ) {
-			var potential = potentials[i];
+		jQuery.fn.each(potentials, function(i, potential){ 
 			if( potential.id !== undefined && potential.id === el.id ) 
 				valid = true;
 				
-		}
+		});
 		
 		// restore the el id state
 		original_id ? el.setAttribute("id", original_id) : el.removeAttribute("id");
@@ -74,6 +83,8 @@
 		if( selector === undefined ) {
 			var children = parent.children,
 				els = [];
+				
+			// todo: use filter here
 			for( var i = 0; i < children.length; i++) {
 				if( is_html_el( children[i] ) ) 
 					els.push(children[i]);
@@ -114,6 +125,12 @@
 
 		return new ElementArray(nexts);
 	};
+	
+	var remove_el_from_dom = function( el ) {
+		var html = el.outerHTML;
+		el.parentElement.removeChild(el);
+		return html;
+	};
 
 	var jQuery = function( selector, context ) {
 		return init.call(this, selector, context );
@@ -149,6 +166,20 @@
 			}
 			
 			return arr;
+		},
+		
+		each: function( obj, cb ) {
+			
+			obj = obj || this;
+				
+			if( typeof(cb) === 'function' && obj.length !== undefined) {
+				
+				for(var i = 0; i < obj.length; i++) {
+					cb.call(obj[i], i, obj[i]);
+				}
+			}
+			
+			return obj;
 		}
 	}
 	
@@ -176,10 +207,24 @@
 		splice: Array.prototype.splice,
 		push: Array.prototype.push,
 		concat: Array.prototype.concat,
+		indexOf: Array.prototype.indexOf,
 		
-		html: function(){
+		text: function( text ){
+			// todo: encode this here? encodeURI()
+			// jQuery doesn't seem to use innerText
+			if( text !== undefined ) {
+				this[0].innerText = text; 
+			}
+			// todo: fix this so you can set html as well
+			return this.length > 0 ? this[0].innerHTML : undefined;
+		},
+		
+		html: function( html ){
 			
-			// todo: call first property here element
+			if( html !== undefined ) {
+				this[0].innerHTML = html;
+			}
+			// todo: fix this so you can set html as well
 			return this.length > 0 ? this[0].innerHTML : undefined;
 		},
 		
@@ -299,6 +344,81 @@
 			return this;
 		},
 		
+		append: function( html ) {
+			
+			if( html instanceof(ElementArray) ) {
+				var new_html = '';
+				
+				jQuery.fn.each(html, function(){
+					new_html += this.outerHTML;
+					this.parentElement.removeChild(this);
+				});
+				
+				html = new_html;
+			} 
+			
+			if( typeof(html) === 'string' ) 
+				this.each(function(){ 
+					this.innerHTML += html;
+				});
+			
+			return this;
+		},
+		
+		prepend: function( html ) {
+			
+			if( html instanceof(ElementArray) ) {
+				
+				// todo: use map here, use the remove call here
+				var new_html = '';
+				
+				jQuery.fn.each(html, function(){
+					new_html = new_html + remove_el_from_dom(this);
+				});
+				
+				html = new_html;
+			} 
+			
+			if( typeof(html) === 'string' ) 
+				this.each(function(){ 
+					this.innerHTML = html + this.innerHTML;
+				});
+			
+			
+			return this;
+		},
+		
+		// removes the element from the dom
+		remove: function( selector ) {
+			var obj = this,
+				els = this;
+
+			if( selector !== undefined ) {
+				els = this.find(selector);
+			} 
+			
+			jQuery.fn.each(els, function(){ 
+				remove_el_from_dom(this); 
+				
+				// remove from the jQuery object
+				var objIndex = obj.indexOf(this);
+				if( objIndex != -1 ) {
+					delete obj[objIndex]; // todo: move this out!
+					obj.length -= 1;
+				} 
+			});
+			
+			return this;
+		},
+		
+		empty: function() {
+			this.html('');
+			return this;
+		},
+		
+		each: function( cb ) {
+			return jQuery.fn.each.call(this, this, cb);
+		}
 	};
 	ElementArray.prototype = Object.create(jQuery.prototype);
 	
@@ -309,6 +429,9 @@
 	extend(jQuery, jQuery.fn);
 	
 	// set the global variables
-	parent_doc.$ = parent_doc.jQuery = jQuery;
+	if( typeof(parent_doc.jQuery) === "undefined" ) {
+		parent_doc.$ = parent_doc.jQuery = jQuery;
+	}
+	parent_doc._ = jQuery;
 
 })( window )

@@ -70,12 +70,10 @@ describe("iterators", function(){
 			it("should call the callback if this is NOT empty", function(){
 				var testCB = jasmine.createSpy();
 				var _divs = _wrapper.find('div');
-				var returned = _divs.each(testCB);
+				_divs.each(testCB);
 				expect(testCB).toHaveBeenCalled();
+				expect(testCB.calls.count()).toEqual( _divs.length );
 				expect(testCB.calls.argsFor(0)).toEqual([0, _div1]);
-				expect(returned).toContain(_div1);
-				expect(returned).toContain(_div2);
-				expect(returned).toContain(_div3);
 			});
 		});
 	});
