@@ -176,6 +176,67 @@ describe("insertion", function(){
 		});
 	}); // end prepend
 	
+	describe("insertAfter", function(){
+		
+		it("should be a defined method", function(){
+			expect(typeof(_div1.insertAfter)).toBe('function');
+		});
+		
+		describe("when selector is an object", function(){
+			
+			it("should insert the object after, removing the object from dom", function(){
+				var div1Class = div1.attr('class');
+				_div1.insertAfter(_div2);
+				expect(wrapper.find('div').first()).toEqual(_div2);
+				expect(_div2[0].nextElementSibling).toBe(_div1[0]);
+			});
+		});
+		
+		describe("when selector is empty", function(){
+			
+			it("should return empty ", function(){
+				
+			});
+		});
+		
+		describe("when selector is a non-empty string", function(){
+			
+			it("it should create a node after", function(){
+				
+			});
+		});
+		
+	}); // end insertAfter
+	
+	describe("insertBefore", function(){
+		
+		it("should be a defined method", function(){
+			expect(typeof(_div1.insertBefore)).toBe('function');
+		});
+		
+		describe("when selector is an object", function(){
+			
+			it("should insert the object before the parent", function(){
+				
+			});
+		});
+		
+		describe("when selector is empty", function(){
+			
+			it("should return empty ", function(){
+				
+			});
+		});
+		
+		describe("when selector is a non-empty string", function(){
+			
+			it("it should create a node  before the parent", function(){
+				
+			});
+		});
+		
+	}); // end insertBefore
+	
 	describe("remove", function(){
 		
 		it("should be a defined method", function(){

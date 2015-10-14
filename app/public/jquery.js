@@ -389,6 +389,20 @@
 			return this;
 		},
 		
+		insertBefore: function(selector) {
+			return this;
+		},
+		
+		insertAfter: function(target) {
+			
+
+			if( target instanceof(ElementArray) ) {
+				target[0].parentNode.insertBefore(this[0], target[0].nextSibling);
+			}
+
+			return this;
+		},
+		
 		// removes the element from the dom
 		remove: function( selector ) {
 			var obj = this,
