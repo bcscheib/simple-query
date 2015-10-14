@@ -203,28 +203,32 @@ describe("insertion", function(){
 		
 		describe("when selector/subject has multiple elements", function(){
 			it("should insert subject after each target", function(){
+				var divClasses = $.map(_divs, function(div){
+					return div.className;
+				});
+				
 				var returned = _divs.insertAfter(_div2);
-				expect(returned.length).toBe(_divs.length);
+				
+				expect(returned.length).toBe(divClasses.length);
 				$.each(returned, function(i){
-					expect(this).toHaveClass(_divs[i].className);
+					expect(this).toHaveClass(divClasses[i]);
 				});	
 			});
 		});
 		
 		describe("when target is an object", function(){
 			
-			// todo: check when selector has multiple objects
-			it("should insert objects in this after each element in target, removing the object from DOM", function(){
+			it("should insert subject objects after each element in target", function(){
 				$.each(_divs, function(){
 					expect(this.nextElementSibling).not.toHaveClass(div1Class);
 				});	
 				
 				_div1.insertAfter(_divs);
 				
-				// testing order of new elements
-				$.each(_divs, function(){
-					expect(this.nextElementSibling).toHaveClass(div1Class);
-				});			
+				$.each(_divs, function(i, _div){
+					if( _div.parentElement ) 
+						expect(_div.nextElementSibling).toHaveClass(div1Class);
+				});
 			});
 			
 			it("should return the newly created divs", function(){
@@ -236,6 +240,14 @@ describe("insertion", function(){
 				$.each(returned, function(){
 					expect(this).toHaveClass(div1Class);
 				});	
+			});
+			
+			it("should remove the subject from the DOM", function(){
+				expect(_wrapper[0].innerHTML).toContain(div1Class)
+				_div1.insertAfter(_div2);
+				
+				var firstNewDiv = wrapper.find('div').first();
+				expect(firstNewDiv).not.toHaveClass(div1Class);
 			});
 		});
 		
@@ -299,28 +311,32 @@ describe("insertion", function(){
 		
 		describe("when selector/subject has multiple elements", function(){
 			it("should insert subject Before each target", function(){
+				var divClasses = $.map(_divs, function(div){
+					return div.className;
+				});
+				
 				var returned = _divs.insertBefore(_div2);
-				expect(returned.length).toBe(_divs.length);
+				
+				expect(returned.length).toBe(divClasses.length);
 				$.each(returned, function(i){
-					expect(this).toHaveClass(_divs[i].className);
+					expect(this).toHaveClass(divClasses[i]);
 				});	
 			});
 		});
 		
 		describe("when target is an object", function(){
 			
-			// todo: check when selector has multiple objects
-			it("should insert objects in this Before each element in target, removing the object from DOM", function(){
-				/*$.each(_divs, function(){
-					expect(this.previousElementSibling).not.toHaveClass(div1Class);
-				});*/
+			it("should insert subject objects after each element in target", function(){
+				$.each(_divs, function(){
+					expect(this.nextElementSibling).not.toHaveClass(div1Class);
+				});	
 				
 				_div1.insertBefore(_divs);
 				
-				// testing order of new elements
-				$.each(_divs, function(){
-					expect(this.previousElementSibling).toHaveClass(div1Class);
-				});			
+				$.each(_divs, function(i, _div){
+					if( _div.parentElement ) 
+						expect(_div.previousElementSibling).toHaveClass(div1Class);
+				});
 			});
 			
 			it("should return the newly created divs", function(){
@@ -332,6 +348,17 @@ describe("insertion", function(){
 				$.each(returned, function(){
 					expect(this).toHaveClass(div1Class);
 				});	
+			});
+			
+			it("should remove the subject from the DOM", function(){
+				var div2Class = div2.attr('class');
+				expect(_wrapper[0].innerHTML).toContain(div1Class)
+				_div2.insertBefore(_div1);
+				
+				var firstNewDiv = wrapper.find('div').first();
+				expect(firstNewDiv).toHaveClass(div2Class);
+				
+				expect(firstNewDiv.nextAll('.' + div2Class).length).toBe(0);
 			});
 		});
 		

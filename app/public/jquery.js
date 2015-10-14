@@ -407,7 +407,7 @@
 						inserted.push(node);
 					});
 				});
-				
+				this.remove();
 			}
 
 			return new ElementArray( inserted );
@@ -419,20 +419,25 @@
 			if( typeof(target) === 'string' ) 
 				target = jQuery.fn.find(target);
 			 	
+			
 			if( target instanceof(ElementArray) && target.length ) {
 				
 				jQuery.fn.each(this, function(){
+					
 					var subject_el = this;
 					
-					jQuery.fn.each(target, function(){
+					var remove_targets = []; // array of targets needed to be removed
+					jQuery.fn.each(target, function(i){
 						var target_el = this;
+						
 						var node = subject_el.cloneNode(true);
 						target_el.parentNode.insertBefore(node, target_el.nextSibling);
 						inserted.push(node);
 					});
 				});
-				
+				this.remove();
 			}
+			
 
 			return new ElementArray( inserted );
 		},
@@ -442,9 +447,9 @@
 			var obj = this,
 				els = this;
 
-			if( selector !== undefined ) {
+			if( typeof(selector) === 'string' ) {
 				els = this.find(selector);
-			} 
+			}
 			
 			jQuery.fn.each(els, function(){ 
 				remove_el_from_dom(this); 
