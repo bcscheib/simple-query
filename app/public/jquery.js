@@ -15,7 +15,7 @@
 		if( html.length && html[0] === '<' ) {
 			var div = document.createElement('div');
 			div.innerHTML = html;
-			node = div.childNodes;
+			node = new ElementArray(div.childNodes[0]);
 		}
 		
 		return node;
@@ -389,18 +389,52 @@
 			return this;
 		},
 		
-		insertBefore: function(selector) {
-			return this;
+		insertBefore: function( target ) {
+			var inserted = [];
+			 	
+			if( typeof(target) === 'string' ) 
+				target = jQuery.fn.find(target);
+			 	
+			if( target instanceof(ElementArray) && target.length ) {
+				
+				jQuery.fn.each(this, function(){
+					var subject_el = this;
+					
+					jQuery.fn.each(target, function(){
+						var target_el = this;
+						var node = subject_el.cloneNode(true);
+						target_el.parentNode.insertBefore(node, target_el.previousSibling);
+						inserted.push(node);
+					});
+				});
+				
+			}
+
+			return new ElementArray( inserted );
 		},
 		
 		insertAfter: function(target) {
-			
-
-			if( target instanceof(ElementArray) ) {
-				target[0].parentNode.insertBefore(this[0], target[0].nextSibling);
+			var inserted = [];
+			 	
+			if( typeof(target) === 'string' ) 
+				target = jQuery.fn.find(target);
+			 	
+			if( target instanceof(ElementArray) && target.length ) {
+				
+				jQuery.fn.each(this, function(){
+					var subject_el = this;
+					
+					jQuery.fn.each(target, function(){
+						var target_el = this;
+						var node = subject_el.cloneNode(true);
+						target_el.parentNode.insertBefore(node, target_el.nextSibling);
+						inserted.push(node);
+					});
+				});
+				
 			}
 
-			return this;
+			return new ElementArray( inserted );
 		},
 		
 		// removes the element from the dom

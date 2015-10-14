@@ -178,31 +178,95 @@ describe("insertion", function(){
 	
 	describe("insertAfter", function(){
 		
+		var _divs, div1Class;
+		beforeEach(function(){
+			div1Class = div1.attr('class');
+			_divs = _wrapper.find('div');
+			expect(_divs.length).toBeGreaterThan(0);
+		});
+		
 		it("should be a defined method", function(){
 			expect(typeof(_div1.insertAfter)).toBe('function');
 		});
 		
-		describe("when selector is an object", function(){
-			
-			it("should insert the object after, removing the object from dom", function(){
-				var div1Class = div1.attr('class');
-				_div1.insertAfter(_div2);
-				expect(wrapper.find('div').first()).toEqual(_div2);
-				expect(_div2[0].nextElementSibling).toBe(_div1[0]);
+		describe("when selector/subject is a new element", function(){
+			it("should insert subject after each target", function(){
+				var newClass = 'random';
+				expect(div2[0].nextElementSibling).not.toHaveClass(newClass);
+				
+				var returned = _('<div class="' + newClass + '"></div').insertAfter(_div2);
+				expect(returned.length).toBe(1);
+				expect(returned[0]).toHaveClass(newClass);
+				expect(div2[0].nextElementSibling).toHaveClass(newClass);
 			});
 		});
 		
-		describe("when selector is empty", function(){
-			
-			it("should return empty ", function(){
-				
+		describe("when selector/subject has multiple elements", function(){
+			it("should insert subject after each target", function(){
+				var returned = _divs.insertAfter(_div2);
+				expect(returned.length).toBe(_divs.length);
+				$.each(returned, function(i){
+					expect(this).toHaveClass(_divs[i].className);
+				});	
 			});
 		});
 		
-		describe("when selector is a non-empty string", function(){
+		describe("when target is an object", function(){
 			
-			it("it should create a node after", function(){
+			// todo: check when selector has multiple objects
+			it("should insert objects in this after each element in target, removing the object from DOM", function(){
+				$.each(_divs, function(){
+					expect(this.nextElementSibling).not.toHaveClass(div1Class);
+				});	
 				
+				_div1.insertAfter(_divs);
+				
+				// testing order of new elements
+				$.each(_divs, function(){
+					expect(this.nextElementSibling).toHaveClass(div1Class);
+				});			
+			});
+			
+			it("should return the newly created divs", function(){
+				
+				var returned = _div1.insertAfter(_divs);
+				
+				expect(returned.length).toBe(_divs.length);
+				
+				$.each(returned, function(){
+					expect(this).toHaveClass(div1Class);
+				});	
+			});
+		});
+		
+		describe("when target is a non-empty string", function(){
+			
+			it("if target matches an dom element, it should create a node after", function(){
+				var target = div2.attr('class');
+				expect(target.length).toBeGreaterThan(0);
+				var returned = _div1.insertAfter('.' + target);
+				expect(div2[0].nextElementSibling).toHaveClass(div1Class);
+				expect(returned.length).toBe(1);
+				expect(returned[0]).toHaveClass(div1Class);
+			});
+			
+			it("if target doesn't match dom element in dom, should NOT create a node after", function()			{	
+				var target = '.random';
+				var returned = _div1.insertAfter(target);
+				expect(div2[0].nextElementSibling).not.toHaveClass(div1Class);
+				expect(returned.length).toBe(0);
+			});
+		});
+		
+		describe("when target is empty", function(){
+			
+			it("should return empty", function(){
+				var wrapperHTML = _wrapper[0].innerHTML,
+					returned = _div1.insertAfter();
+					
+				// test the wrapper html wasnt changed
+				expect(returned.length).toBe(0);
+				expect(_wrapper[0].innerHTML).toBe(wrapperHTML);
 			});
 		});
 		
@@ -210,28 +274,95 @@ describe("insertion", function(){
 	
 	describe("insertBefore", function(){
 		
+		var _divs, div1Class;
+		beforeEach(function(){
+			div1Class = div1.attr('class');
+			_divs = _wrapper.find('div');
+			expect(_divs.length).toBeGreaterThan(0);
+		});
+		
 		it("should be a defined method", function(){
 			expect(typeof(_div1.insertBefore)).toBe('function');
 		});
 		
-		describe("when selector is an object", function(){
-			
-			it("should insert the object before the parent", function(){
+		describe("when selector/subject is a new element", function(){
+			it("should insert subject before each target", function(){
+				var newClass = 'random';
+				expect(div2[0].previousElementSibling).not.toHaveClass(newClass);
 				
+				var returned = _('<div class="' + newClass + '"></div').insertBefore(_div2);
+				expect(returned.length).toBe(1);
+				expect(returned[0]).toHaveClass(newClass);
+				expect(div2[0].previousElementSibling).toHaveClass(newClass);
 			});
 		});
 		
-		describe("when selector is empty", function(){
-			
-			it("should return empty ", function(){
-				
+		describe("when selector/subject has multiple elements", function(){
+			it("should insert subject Before each target", function(){
+				var returned = _divs.insertBefore(_div2);
+				expect(returned.length).toBe(_divs.length);
+				$.each(returned, function(i){
+					expect(this).toHaveClass(_divs[i].className);
+				});	
 			});
 		});
 		
-		describe("when selector is a non-empty string", function(){
+		describe("when target is an object", function(){
 			
-			it("it should create a node  before the parent", function(){
+			// todo: check when selector has multiple objects
+			it("should insert objects in this Before each element in target, removing the object from DOM", function(){
+				/*$.each(_divs, function(){
+					expect(this.previousElementSibling).not.toHaveClass(div1Class);
+				});*/
 				
+				_div1.insertBefore(_divs);
+				
+				// testing order of new elements
+				$.each(_divs, function(){
+					expect(this.previousElementSibling).toHaveClass(div1Class);
+				});			
+			});
+			
+			it("should return the newly created divs", function(){
+				
+				var returned = _div1.insertBefore(_divs);
+				
+				expect(returned.length).toBe(_divs.length);
+				
+				$.each(returned, function(){
+					expect(this).toHaveClass(div1Class);
+				});	
+			});
+		});
+		
+		describe("when target is a non-empty string", function(){
+			
+			it("if target matches an dom element, it should create a node before", function(){
+				var target = div2.attr('class');
+				expect(target.length).toBeGreaterThan(0);
+				var returned = _div1.insertBefore('.' + target);
+				expect(div2[0].previousElementSibling).toHaveClass(div1Class);
+				expect(returned.length).toBe(1);
+				expect(returned[0]).toHaveClass(div1Class);
+			});
+			
+			it("if target doesn't match dom element in dom, should NOT create a node before", function()			{	
+				var target = '.random';
+				var returned = _div1.insertBefore(target);
+				expect(div2[0].nextElementSibling).not.toHaveClass(div1Class);
+				expect(returned.length).toBe(0);
+			});
+		});
+		
+		describe("when target is empty", function(){
+			
+			it("should return empty", function(){
+				var wrapperHTML = _wrapper[0].innerHTML,
+					returned = _div1.insertBefore();
+					
+				// test the wrapper html wasnt changed
+				expect(returned.length).toBe(0);
+				expect(_wrapper[0].innerHTML).toBe(wrapperHTML);
 			});
 		});
 		
@@ -262,7 +393,6 @@ describe("insertion", function(){
 				expect(_('.' + div1Class)).not.toExist();
 				
 				expect(returned).not.toContain(_div1);
-				console.log(returned);
 				expect(returned.length).toEqual(0);
 			});
 		});
