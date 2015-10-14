@@ -215,17 +215,18 @@
 			if( text !== undefined ) {
 				this[0].innerText = text; 
 			}
-			// todo: fix this so you can set html as well
-			return this.length > 0 ? this[0].innerHTML : undefined;
+			return this.length > 0 ? this[0].innerText : undefined;
 		},
 		
 		html: function( html ){
 			
 			if( html !== undefined ) {
 				this[0].innerHTML = html;
+				return this;
+			} else {
+				return this.length > 0 ? this[0].innerHTML : undefined;
 			}
-			// todo: fix this so you can set html as well
-			return this.length > 0 ? this[0].innerHTML : undefined;
+			
 		},
 		
 		// todo: fix when the document element 

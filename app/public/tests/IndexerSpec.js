@@ -55,6 +55,7 @@ describe("indexing", function(){
 		describe("getting the text", function(){
 			describe("when the element exists", function(){
 				it("should return the inner text element", function() {
+					div1.html('<span>randomtext</span>');
 					var text = _div1.text();
 					
 					expect(text).toBe(div1.text());
@@ -88,8 +89,9 @@ describe("indexing", function(){
 			
 			it("should let you set the html of the element with other html", function(){
 				var newHTML = '<div class="last"></div>';
-				_div1.html(newHTML);
+				var returned = _div1.html(newHTML);
 				expect(div1.get(0).innerHTML).toBe(newHTML);
+				expect(returned).toEqual(_div1);
 			});
 		});
 		
@@ -97,7 +99,6 @@ describe("indexing", function(){
 			describe("when the element exists", function(){
 				it("should return the inner html element", function() {
 					var html = _div1.html();
-					
 					expect(html).toBe(div1.html());
 				});
 			});
