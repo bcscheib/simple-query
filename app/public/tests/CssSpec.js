@@ -51,6 +51,20 @@ describe("indexing", function(){
 				expect(_div1).toBeVisible();
 				expect(_div1[0].getAttribute('style')).not.toContain('display: none');
 				expect(returned).toEqual(_div1);
+				
+			});
+			
+			it("should show the element, returning this when there is not a semicolon on style", function(){
+				
+				div1.attr('style', 'display: none');
+				
+				expect(_div1).toBeHidden();
+				var returned = _div1.show();
+				console.log(_div1[0].outerHTML);
+				expect(_div1).toBeVisible();
+				expect(_div1[0].getAttribute('style')).not.toContain('display: none');
+				expect(returned).toEqual(_div1);
+				
 			});
 			
 			it("should preserve other style attributes", function(){
@@ -123,6 +137,17 @@ describe("indexing", function(){
 				expect(returned).toEqual(_div1);
 			});
 			
+			it("should hide the element, returning this when there is NOT a semicolon on style", function(){
+				
+				div1.attr('style', 'display: block');
+				
+				expect(_div1).toBeVisible();
+				var returned = _div1.hide();
+				expect(_div1).toBeHidden();
+				expect(returned).toEqual(_div1);
+				
+			});
+			
 			it("should hide explicity shown elements", function(){
 				div1.css('display', 'block');
 				_div1.hide();
@@ -133,8 +158,10 @@ describe("indexing", function(){
 				div1.hide().css('border', '1px solid black');
 				expect(_div1).toBeHidden();
 				var returned = _div1.hide();
-				expect(_div1[0].getAttribute('style')).toContain('display: none;');
-				expect(_div1[0].getAttribute('style')).toContain('border: 1px solid black;');
+				
+				var style = _div1[0].getAttribute('style');
+				expect(style).toContain('display: none;');
+				expect(style).toContain('border: 1px solid black;');
 			});
 			
 			it("should hide all elements when there are multiples in this", function(){

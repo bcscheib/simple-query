@@ -477,9 +477,12 @@
 				var wasHidden = false;
 				
 				if( style ) {
-					var matches = style.match(/display\:\s?(none)\;?/g);
+					var regex = /display\:\s?(none)\;?/g;
+					
+					var matches = style.match(regex);
 					wasHidden = matches && matches.length !== undefined && matches.length > 0;
-					style = style.replace(/display\:\s?(none)\;?/g, '');
+					
+					style = style.replace(regex, '');
 					style.length ? this.setAttribute('style', style) : this.removeAttribute('style');
 				} else {
 					style = '';
@@ -499,11 +502,12 @@
 		},
 		
 		hide: function() {
+			
 			this.each(function(){
 				var style = this.getAttribute('style');
 				
 				if( style ) {
-					style = style.replace(/display\:\s?(block|inline|inline-block)\;/g, '');
+					style = style.replace(/display\:\s?(block|inline|inline-block)\;?/g, '');
 					style.length ? this.setAttribute('style', style) : this.removeAttribute('style');
 				} else {
 					style = '';
