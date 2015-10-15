@@ -470,6 +470,57 @@
 			return this;
 		},
 		
+		show: function() {
+			
+			this.each(function(){
+				var style = this.getAttribute('style');
+				var wasHidden = false;
+				
+				if( style ) {
+					var matches = style.match(/display\:\s?(none)\;?/g);
+					wasHidden = matches && matches.length !== undefined && matches.length > 0;
+					style = style.replace(/display\:\s?(none)\;?/g, '');
+					style.length ? this.setAttribute('style', style) : this.removeAttribute('style');
+				} else {
+					style = '';
+				}
+
+				var display = window.getComputedStyle(this).getPropertyValue('display');
+				
+				if( wasHidden && display ) 
+					style = 'display: ' + display + ';' + style;
+				
+				if( style && style.length ) 
+					this.setAttribute('style', style);
+				
+			});
+			
+			return this;
+		},
+		
+		hide: function() {
+			this.each(function(){
+				var style = this.getAttribute('style');
+				
+				if( style ) {
+					style = style.replace(/display\:\s?(block|inline|inline-block)\;/g, '');
+					style.length ? this.setAttribute('style', style) : this.removeAttribute('style');
+				} else {
+					style = '';
+				}
+				
+				var display = 'display: none';
+				if( style.indexOf(display) == -1 ) 
+					style = display + style;
+				
+				if( style && style.length ) 
+					this.setAttribute('style', style);
+				
+			});
+			
+			return this;
+		},
+		
 		each: function( cb ) {
 			return jQuery.fn.each.call(this, this, cb);
 		}
