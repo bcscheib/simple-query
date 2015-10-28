@@ -28,6 +28,13 @@ describe("indexing", function(){
 		expect(_div4).toExist();
 	});
 	
+	describe("general selection", function(){
+		it("should not allow parent selection from a child context", function(){
+			var _result = _('body').find('body div');
+			expect(_result.length).toBe(0);
+		});
+	});
+	
 	describe(">", function(){
 		it("should work with a child selector", function(){
 			var next = div1.find('> span');

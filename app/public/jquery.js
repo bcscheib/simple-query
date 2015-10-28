@@ -35,7 +35,9 @@
 	    };
 	    
 	    // use a shim for the > child selector
-	    // works by default only when parent is set
+	    // works by default only when parent is present before >
+	    // ie this works .test > .div
+	    // this does not by defualt > .test > .div
 	    var next = function(next_parent, next_selector) {
 		   var matches = [];
 		   
@@ -48,9 +50,33 @@
 		            	matches.push(children[i]);
 		        	}
 		   		}
-		   } else 
-		   		matches = next_parent.querySelectorAll(next_selector);
-		   
+		   } else {
+			   var all_selectors = next_selector.split(' ');
+			   var els = next_parent.length === undefined ? [next_parent] : next_parent;
+
+			   jQuery.fn.each(all_selectors, function(){ 
+				   
+				   var selector = this;
+				   var selector_els = [];
+				   
+				   jQuery.fn.each(els, function(){ 
+					   var el = this;
+					   
+					   var selected = el.querySelectorAll(selector);
+					   if(selected.length) {
+						   jQuery.fn.each(selected, function(){ 
+							   selector_els.push(this);
+						   });
+					   }
+					   	
+				   });
+				   els = selector_els;
+			   });
+			   
+			   matches = els;
+			   
+		   	   //matches = next_parent.querySelectorAll(next_selector); // this is bs!
+		   }
 		   return matches;
 	    };
 	    
