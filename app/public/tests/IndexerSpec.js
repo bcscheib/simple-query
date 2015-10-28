@@ -28,6 +28,42 @@ describe("indexing", function(){
 		expect(_div4).toExist();
 	});
 	
+	describe(">", function(){
+		it("should work with a child selector", function(){
+			var next = div1.find('> span');
+			var _next = _div1.find('> span');
+			expect(_next.length).toBe(next.length);
+			expect(_next[0]).toBe(next[0]);
+		});
+		
+		it("should not throw an error when there are no results", function(){
+			var _next = div1.find('> p.doesnotexist');
+			expect(_next.length).toBe(0);
+		});
+	});
+	
+	describe("eq", function(){
+		it("should return the element at the position and not error", function() {
+			var first = _wrapper.find('div:eq(0)');
+			expect(first).toExist();
+			expect(first[0]).toBe(div1.get(0));
+			var second = _wrapper.find('div:eq(1)');
+			expect(second).toExist();
+			expect(second[0]).toBe(div2.get(0));
+		});
+		
+		it("should still work when there is a child pseudo selector", function() {
+			var _eq_result = _div3.find('> div:eq(0)');
+			expect(_eq_result).toExist();
+			expect(_eq_result[0]).toBe(div4.get(0));
+		});
+		
+		it("should not error when there are no results", function() {
+			var _eq_result = _div3.find('> div:eq(999)');
+			expect(_eq_result.length).toBe(0);
+		});
+	});
+	
 	describe("text", function(){
 		it("should be a defined method", function(){
 			expect(typeof(_div1.text)).toBe('function');
@@ -153,16 +189,7 @@ describe("indexing", function(){
 				expect(first.length).toBe(0);
 			});
 		});
-		describe("when a selector itself contains an eq", function(){
-			it("should return the element at the position and not error", function() {
-				var first = _wrapper.find('div:eq(0)');
-				expect(first).toExist();
-				expect(first[0]).toBe(div1.get(0));
-				var second = _wrapper.find('div:eq(1)');
-				expect(second).toExist();
-				expect(second[0]).toBe(div2.get(0));
-			});
-		});
+		
 	});
 	
 	describe("first", function(){

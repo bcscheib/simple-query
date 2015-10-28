@@ -1,48 +1,62 @@
 (function( parent_doc ){
+	
+	// custom replacement for querySelectorAll to
+	// allow for the :eq pseudo selector and the > child selector
 	var select = function (selector, parent) {
-		
-	    if (selector === undefined || parent === undefined) {
+	    if ( !selector || !parent) 
 	        return null;
-	    }
-	    var queue = [];
-	    var process = function (input) {
-	        if (input.indexOf(":eq(") === -1) {
-	            return undefined;
-	        }
-	
-	        var eqlLoc = input.indexOf(":eq(");
-	        var sel = input.substring(0, eqlLoc);
-	        var ind = input.substring((eqlLoc + 4), input.indexOf(")", eqlLoc));
-	        selector = input.substring(input.indexOf(")", eqlLoc) + 1, input.length);
-	
-	        if (sel.charAt(0) === ">") {
-	            sel = sel.substring(1, sel.length);
-	        }
-	
-	        if (selector.charAt(0) === ">") {
-	            selector = selector.substring(1, selector.length);
-	        }
-	
-	        queue.push({
-	            selector: sel,
-	            index: ind
-	        });
-	    }
-	    while (selector.indexOf(":eq") !== -1) {
-	        process(selector);
-	    }
-	
-	    var result;
-	    while (queue.length > 0) {
-	        var item = queue.shift();
-	        result = (result || parent).querySelectorAll(item.selector)[item.index];
-	    }
-	
-	    if (selector.trim().length > 0) {
-	        return (result || parent).querySelectorAll(selector);
-	    }
-	    return result === undefined ? [] : [result];
-	}
+	    
+	    var eq = function (eq_parent, eq_selector) {
+		    eq_selector = eq_selector.trim();
+		    
+		    if( !eq_selector.length )
+		    	return eq_parent;
+		    
+		    var eq_pseudo = ':eq(',
+		        eq_pos = eq_selector.indexOf(eq_pseudo), 
+		    	el = null;
+		    
+		    if( eq_pos !== -1 ) {
+			    
+			    var sub_selector = eq_selector.substring(0, eq_pos), // selector up to :eq(
+			       after_selector = eq_selector.substring(eq_pos + eq_pseudo.length), // selector after :eq
+			       eq_index = after_selector.match(/(\d+)\).*/)[1], // value of :eq(index)
+			       els = next(eq_parent, sub_selector), // elements matched without the eq
+			       
+			       // if enough els, return index, else empty set
+			       el = els[eq_index] !== undefined ? els[eq_index] : [];
+			       sub_selector = after_selector.match(/\d+\)(.*)/)[1]; // recursive with selector after eq:(..)
+			   
+			    return eq(el, sub_selector);
+			   
+			} else {
+			   return next(eq_parent, eq_selector);
+			};
+	    };
+	    
+	    // use a shim for the > child selector
+	    // works by default only when parent is set
+	    var next = function(next_parent, next_selector) {
+		   var matches = [];
+		   
+		   if( next_selector.indexOf('>') == 0) {
+			    var child_selector = next_selector.substring(1),
+			        children = next_parent.children;
+			    
+			   	for (var i = 0; i < children.length; ++i){
+		        	if (children[i].matches(child_selector)){
+		            	matches.push(children[i]);
+		        	}
+		   		}
+		   } else 
+		   		matches = next_parent.querySelectorAll(next_selector);
+		   
+		   return matches;
+	    };
+	    
+	    var els = eq(parent, selector);
+	    return els.length === undefined ? [els] : els;
+	};
 	
 	function extend(destination, source) {
 	  for (var k in source) {
@@ -84,7 +98,6 @@
 	}
 	
 	var find_by_parent = function( selector, parent, container_arr ) {
-				
 		if( container_arr === undefined )
 			container_arr = [];
 					
