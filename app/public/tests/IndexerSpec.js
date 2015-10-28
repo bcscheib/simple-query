@@ -153,6 +153,16 @@ describe("indexing", function(){
 				expect(first.length).toBe(0);
 			});
 		});
+		describe("when a selector itself contains an eq", function(){
+			it("should return the element at the position and not error", function() {
+				var first = _wrapper.find('div:eq(0)');
+				expect(first).toExist();
+				expect(first[0]).toBe(div1.get(0));
+				var second = _wrapper.find('div:eq(1)');
+				expect(second).toExist();
+				expect(second[0]).toBe(div2.get(0));
+			});
+		});
 	});
 	
 	describe("first", function(){

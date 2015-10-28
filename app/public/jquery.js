@@ -1,4 +1,48 @@
 (function( parent_doc ){
+	var select = function (selector, parent) {
+		
+	    if (selector === undefined || parent === undefined) {
+	        return null;
+	    }
+	    var queue = [];
+	    var process = function (input) {
+	        if (input.indexOf(":eq(") === -1) {
+	            return undefined;
+	        }
+	
+	        var eqlLoc = input.indexOf(":eq(");
+	        var sel = input.substring(0, eqlLoc);
+	        var ind = input.substring((eqlLoc + 4), input.indexOf(")", eqlLoc));
+	        selector = input.substring(input.indexOf(")", eqlLoc) + 1, input.length);
+	
+	        if (sel.charAt(0) === ">") {
+	            sel = sel.substring(1, sel.length);
+	        }
+	
+	        if (selector.charAt(0) === ">") {
+	            selector = selector.substring(1, selector.length);
+	        }
+	
+	        queue.push({
+	            selector: sel,
+	            index: ind
+	        });
+	    }
+	    while (selector.indexOf(":eq") !== -1) {
+	        process(selector);
+	    }
+	
+	    var result;
+	    while (queue.length > 0) {
+	        var item = queue.shift();
+	        result = (result || parent).querySelectorAll(item.selector)[item.index];
+	    }
+	
+	    if (selector.trim().length > 0) {
+	        return (result || parent).querySelectorAll(selector);
+	    }
+	    return result === undefined ? [] : [result];
+	}
 	
 	function extend(destination, source) {
 	  for (var k in source) {
@@ -44,7 +88,7 @@
 		if( container_arr === undefined )
 			container_arr = [];
 					
-		var els = parent.querySelectorAll(selector);
+		var els = select(selector, parent);
 
 		jQuery.fn.each(els, function(){ container_arr.push(this); });
 			

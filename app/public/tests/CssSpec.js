@@ -60,7 +60,6 @@ describe("indexing", function(){
 				
 				expect(_div1).toBeHidden();
 				var returned = _div1.show();
-				console.log(_div1[0].outerHTML);
 				expect(_div1).toBeVisible();
 				expect(_div1[0].getAttribute('style')).not.toContain('display: none');
 				expect(returned).toEqual(_div1);
